@@ -1,0 +1,46 @@
+services:
+  # Backend API Service
+  - type: web
+    name: raven-api
+    env: node
+    rootDir: server
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 8000
+      - key: FRONTEND_URL
+        value: https://raven-client.onrender.com # Placeholder, update after frontend deployment
+      - key: MONGO_URI
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: PAYSTACK_SECRET_KEY
+        sync: false
+      - key: PAYSTACK_PUBLIC_KEY
+        sync: false
+
+  # Frontend Next.js Service
+  - type: web
+    name: raven-client
+    env: node
+    rootDir: client
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://raven-api.onrender.com/api # Placeholder, update after backend deployment
+      - key: NEXT_PUBLIC_SOCKET_URL
+        value: https://raven-api.onrender.com # Placeholder, update after backend deployment
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Raven

@@ -11,6 +11,10 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
 
         const { conversationId, content, recipientId } = req.body;
 
+        if (!content || content.trim().length === 0) {
+            return res.status(400).json({ message: 'Message content cannot be empty' });
+        }
+
         let conversation;
         if (conversationId) {
             conversation = await Conversation.findById(conversationId);
@@ -48,27 +52,34 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
         participants.forEach(async (p: any) => {
             const pId = p.toString();
             if (pId !== req.user?.id) {
-                const socketId = socketIO.userSockets.get(pId);
-                if (socketId) {
-                    socketIO.io.to(socketId).emit('new_message', {
-                        message,
-                        conversationId: conversation?._id
-                    });
+                if (socketIO && socketIO.userSockets) {
+                    const socketId = socketIO.userSockets.get(pId);
+                    if (socketId && socketIO.io) {
+                        socketIO.io.to(socketId).emit('new_message', {
+                            message,
+                            conversationId: conversation?._id
+                        });
+                    }
                 }
 
                 // Create a persistent notification as well
-                await createNotification(pId, {
-                    type: 'message',
-                    title: 'New Message',
-                    message: content.length > 50 ? content.substring(0, 47) + '...' : content,
-                    relatedId: conversation?._id.toString()
-                });
+                try {
+                    await createNotification(pId, {
+                        type: 'message',
+                        title: 'New Message',
+                        message: content.length > 50 ? content.substring(0, 47) + '...' : content,
+                        relatedId: conversation?._id.toString()
+                    }, req.user.id);
+                } catch (notifError) {
+                    console.error('Notification error:', notifError);
+                }
             }
         });
 
         res.status(201).json({ message });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Send message error:', error);
+        res.status(500).json({ message: error.message || 'Failed to send message' });
     }
 };
 
@@ -84,7 +95,8 @@ export const getConversations = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ conversations });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Get conversations error:', error);
+        res.status(500).json({ message: error.message || 'Failed to fetch conversations' });
     }
 };
 
@@ -105,6 +117,7 @@ export const getMessages = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ messages });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Get messages error:', error);
+        res.status(500).json({ message: error.message || 'Failed to fetch messages' });
     }
 };

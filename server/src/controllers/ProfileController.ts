@@ -147,9 +147,9 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
             message: 'Media uploaded successfully',
             portfolio: (profile as any).portfolio
         });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: 'Server error' });
+    } catch (error: any) {
+        console.error('Upload error:', error);
+        res.status(500).json({ message: error.message || 'Failed to upload media' });
     }
 };
 
@@ -257,8 +257,12 @@ export const getVixenProfile = async (req: AuthRequest, res: Response) => {
         const { userId } = req.params;
         const user = await User.findById(userId).select('name role profilePicture');
         
-        if (!user || user.role !== UserRole.VIXEN) {
-            return res.status(404).json({ message: 'Vixen not found' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        
+        if (user.role !== UserRole.VIXEN) {
+            return res.status(404).json({ message: 'User is not a vixen' });
         }
 
         const profile = await VixenProfile.findOne({ user: userId });

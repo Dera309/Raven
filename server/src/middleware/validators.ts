@@ -66,8 +66,12 @@ export const bookingValidation = [
         .withMessage('Description must be between 10 and 1000 characters')
         .escape(),
     body('date')
-        .isISO8601()
-        .withMessage('Please provide a valid date'),
+        .custom((value) => {
+            if (!value) throw new Error('Date is required');
+            const date = new Date(value);
+            if (isNaN(date.getTime())) throw new Error('Please provide a valid date');
+            return true;
+        }),
     body('location')
         .trim()
         .isLength({ min: 2, max: 100 })

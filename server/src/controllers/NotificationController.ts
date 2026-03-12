@@ -41,9 +41,11 @@ export const createNotification = async (recipientId: string, data: any, senderI
         });
         await notification.save();
 
-        const socketId = socketIO.userSockets.get(recipientId);
-        if (socketId) {
-            socketIO.io.to(socketId).emit('new_notification', notification);
+        if (socketIO && socketIO.userSockets) {
+            const socketId = socketIO.userSockets.get(recipientId);
+            if (socketId && socketIO.io) {
+                socketIO.io.to(socketId).emit('new_notification', notification);
+            }
         }
         return notification;
     } catch (error) {

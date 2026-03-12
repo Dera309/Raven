@@ -30,15 +30,15 @@ function BookingForm() {
 
         const fetchVixen = async () => {
             try {
-                const data = await api.get(`/profiles/user/${vixenId}`);
+                const data = await api.get(`/profiles/vixen/${vixenId}`);
                 setVixen(data.user);
                 // Pre-fill rate if available from profile
                 if (data.profile?.rate) {
                     setFormData(prev => ({ ...prev, rateOffered: data.profile.rate.toString() }));
                 }
-            } catch (err) {
+            } catch (err: any) {
                 console.error('Failed to fetch vixen:', err);
-                setError('Vixen not found or unable to fetch details.');
+                setError(err.message || 'Vixen not found or unable to fetch details.');
             } finally {
                 setLoading(false);
             }

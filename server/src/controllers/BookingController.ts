@@ -36,19 +36,24 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         await booking.save();
 
         // Create notification for vixen
-        await createNotification(vixenId, {
-            type: 'booking_request',
-            title: 'New Booking Request',
-            message: `You have a new booking request for "${projectTitle}" from ${artist.name}`,
-            relatedId: booking._id.toString()
-        }, req.user.id);
+        try {
+            await createNotification(vixenId, {
+                type: 'booking_request',
+                title: 'New Booking Request',
+                message: `You have a new booking request for "${projectTitle}" from ${artist.name}`,
+                relatedId: booking._id.toString()
+            }, req.user.id);
+        } catch (notifError) {
+            console.error('Notification error (non-critical):', notifError);
+        }
 
         res.status(201).json({
             message: 'Booking request sent successfully',
             booking
         });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Booking creation error:', error);
+        res.status(500).json({ message: error.message || 'Failed to create booking' });
     }
 };
 
@@ -98,7 +103,8 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
             booking
         });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Update booking status error:', error);
+        res.status(500).json({ message: error.message || 'Failed to update booking' });
     }
 };
 
@@ -118,7 +124,8 @@ export const getMyBookings = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ bookings });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Get my bookings error:', error);
+        res.status(500).json({ message: error.message || 'Failed to fetch bookings' });
     }
 };
 
@@ -140,6 +147,7 @@ export const getBookingById = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ booking });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Get booking error:', error);
+        res.status(500).json({ message: error.message || 'Failed to fetch booking' });
     }
 };

@@ -56,7 +56,8 @@ export const createReview = async (req: AuthRequest, res: Response) => {
             review
         });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Create review error:', error);
+        res.status(500).json({ message: error.message || 'Failed to create review' });
     }
 };
 
@@ -69,6 +70,7 @@ export const getVixenReviews = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ reviews });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('Get vixen reviews error:', error);
+        res.status(500).json({ message: error.message || 'Failed to fetch reviews' });
     }
 };

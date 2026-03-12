@@ -217,7 +217,7 @@ function VixenCard({ vixen }: { vixen: Vixen }) {
                 <Button
                     variant="gradient"
                     className="py-2 text-[9px] sm:text-[10px] font-bold uppercase tracking-wide sm:tracking-widest"
-                    onClick={() => router.push(`/dashboard/artist/booking/new?vixenId=${vixen._id}`)}
+                    onClick={() => router.push(`/dashboard/artist/booking/new?vixenId=${vixen.user._id}`)}
                 >
                     Book Now
                 </Button>
