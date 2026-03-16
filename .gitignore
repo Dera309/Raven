@@ -11,6 +11,7 @@ out/
 .env.local
 .env.production
 .env.development
+.env.test
 .env.*.local
 
 # IDE and editor files
@@ -19,6 +20,12 @@ out/
 *.swp
 *.swo
 *~
+
+# AI tool config directories
+.claude/
+.cursor/
+.junie/
+.kombai/
 
 # OS files
 .DS_Store
