@@ -1,4 +1,6 @@
-import { IUser } from '../../models/User';
+import { IUser } from '../models/User';
+
+export {};
 
 declare global {
     namespace Express {
