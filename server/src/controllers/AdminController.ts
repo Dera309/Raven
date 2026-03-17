@@ -37,6 +37,7 @@ export const getDashboardStats = async (req: AuthRequest, res: Response) => {
             }
         });
     } catch (error: any) {
+        console.error('getDashboardStats error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -46,6 +47,7 @@ export const getAllUsers = async (req: AuthRequest, res: Response) => {
         const users = await User.find().select('-password').sort({ createdAt: -1 });
         res.status(200).json({ users });
     } catch (error: any) {
+        console.error('getAllUsers error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -63,6 +65,7 @@ export const updateUserStatus = async (req: AuthRequest, res: Response) => {
         await user.save();
         res.status(200).json({ message: 'User updated successfully', user });
     } catch (error: any) {
+        console.error('updateUserStatus error:', error);
         res.status(500).json({ message: error.message });
     }
 };
@@ -72,6 +75,7 @@ export const getRevenueDetails = async (req: AuthRequest, res: Response) => {
         const ads = await Ad.find().populate('user', 'name email').sort({ createdAt: -1 });
         res.status(200).json({ ads });
     } catch (error: any) {
+        console.error('getRevenueDetails error:', error);
         res.status(500).json({ message: error.message });
     }
 };

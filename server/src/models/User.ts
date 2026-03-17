@@ -13,6 +13,8 @@ export interface IUser extends Document {
     role: UserRole;
     phone?: string;
     isVerified: boolean;
+    loginAttempts: number;
+    lockUntil?: Date;
     profileImage?: string;
     createdAt: Date;
     updatedAt: Date;
@@ -25,6 +27,8 @@ const UserSchema: Schema = new Schema({
     role: { type: String, enum: Object.values(UserRole), default: UserRole.ARTIST },
     phone: { type: String },
     isVerified: { type: Boolean, default: false },
+    loginAttempts: { type: Number, required: true, default: 0 },
+    lockUntil: { type: Date },
     profileImage: { type: String },
 }, {
     timestamps: true

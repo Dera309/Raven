@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
+import mongoose from 'mongoose';
 import Message from '../models/Message';
 import Conversation from '../models/Conversation';
 import { socketIO } from '../socket';
@@ -71,7 +72,7 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
                         relatedId: conversation?._id.toString()
                     }, req.user.id);
                 } catch (notifError) {
-                    console.error('Notification error:', notifError);
+                    console.error('Notification error (non-critical):', notifError);
                 }
             }
         });
@@ -86,6 +87,10 @@ export const sendMessage = async (req: AuthRequest, res: Response) => {
 export const getConversations = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Service temporarily unavailable' });
+        }
 
         const conversations = await Conversation.find({
             participants: req.user.id
@@ -103,6 +108,10 @@ export const getConversations = async (req: AuthRequest, res: Response) => {
 export const getMessages = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Service temporarily unavailable' });
+        }
 
         const { conversationId } = req.params;
         const messages = await Message.find({ conversation: conversationId })

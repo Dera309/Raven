@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
+import mongoose from 'mongoose';
 import User, { UserRole } from '../models/User';
 import ArtistProfile from '../models/ArtistProfile';
 import VixenProfile from '../models/VixenProfile';
@@ -22,7 +23,7 @@ export const getMyProfile = async (req: AuthRequest, res: Response) => {
 
         res.json({ user, profile });
     } catch (error) {
-        console.error(error);
+        console.error('getMyProfile error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -32,6 +33,10 @@ export const updateArtistProfile = async (req: AuthRequest, res: Response) => {
         if (!req.user) return res.status(401).json({ message: 'Not authorized' });
         const { stageName, bio, genre, location } = req.body;
 
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Service temporarily unavailable' });
+        }
+
         let profile = await ArtistProfile.findOneAndUpdate(
             { user: req.user.id },
             { $set: { stageName, bio, genre, location } },
@@ -40,7 +45,7 @@ export const updateArtistProfile = async (req: AuthRequest, res: Response) => {
 
         res.json(profile);
     } catch (error) {
-        console.error(error);
+        console.error('updateArtistProfile error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -78,7 +83,7 @@ export const updateVixenProfile = async (req: AuthRequest, res: Response) => {
 
         res.json(profile);
     } catch (error) {
-        console.error(error);
+        console.error('updateVixenProfile error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -99,7 +104,7 @@ export const getPublicProfile = async (req: AuthRequest, res: Response) => {
 
         res.json({ user, profile });
     } catch (error) {
-        console.error(error);
+        console.error('getPublicProfile error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -165,6 +170,10 @@ export const getAllVixens = async (req: AuthRequest, res: Response) => {
             limit = 10
         } = req.query;
 
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Service temporarily unavailable. Database connection is down.' });
+        }
+
         // Cleanup expired featured statuses
         await VixenProfile.updateMany(
             { featured: true, featuredExpiresAt: { $lt: new Date() } },
@@ -208,8 +217,8 @@ export const getAllVixens = async (req: AuthRequest, res: Response) => {
                 pages: Math.ceil(total / Number(limit))
             }
         });
-    } catch (error) {
-        console.error(error);
+    } catch (error: any) {
+        console.error('getAllVixens error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -247,7 +256,7 @@ export const getAllArtists = async (req: AuthRequest, res: Response) => {
             }
         });
     } catch (error) {
-        console.error(error);
+        console.error('getAllArtists error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -269,7 +278,7 @@ export const getVixenProfile = async (req: AuthRequest, res: Response) => {
         
         res.json({ user, profile });
     } catch (error) {
-        console.error(error);
+        console.error('getVixenProfile error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };
@@ -283,11 +292,15 @@ export const getArtistProfile = async (req: AuthRequest, res: Response) => {
             return res.status(404).json({ message: 'Artist not found' });
         }
 
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Service temporarily unavailable' });
+        }
+
         const profile = await ArtistProfile.findOne({ user: userId });
         
         res.json({ user, profile });
     } catch (error) {
-        console.error(error);
+        console.error('getArtistProfile error:', error);
         res.status(500).json({ message: 'Server error' });
     }
 };

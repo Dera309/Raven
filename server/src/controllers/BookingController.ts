@@ -1,5 +1,6 @@
 import { Response } from 'express';
 import { AuthRequest } from '../middleware/authMiddleware';
+import mongoose from 'mongoose';
 import Booking, { BookingStatus } from '../models/Booking';
 import User, { UserRole } from '../models/User';
 import { createNotification } from './NotificationController';
@@ -9,6 +10,10 @@ export const createBooking = async (req: AuthRequest, res: Response) => {
         if (!req.user) return res.status(401).json({ message: 'Not authorized' });
 
         const { vixenId, projectTitle, description, date, location, rateOffered } = req.body;
+
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Service temporarily unavailable' });
+        }
 
         // Verify artist role
         const artist = await User.findById(req.user.id);
@@ -91,12 +96,16 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
         await booking.save();
 
         // Notify artist
-        await createNotification(booking.artist._id.toString(), {
-            type: 'booking_status',
-            title: 'Booking Status Updated',
-            message: `Your booking for "${booking.projectTitle}" has been ${status}`,
-            relatedId: booking._id.toString()
-        }, req.user.id);
+        try {
+            await createNotification(booking.artist._id.toString(), {
+                type: 'booking_status',
+                title: 'Booking Status Updated',
+                message: `Your booking for "${booking.projectTitle}" has been ${status}`,
+                relatedId: booking._id.toString()
+            }, req.user.id);
+        } catch (notifError) {
+            console.error('Notification error (non-critical):', notifError);
+        }
 
         res.status(200).json({
             message: `Booking ${status} successfully`,
@@ -111,6 +120,10 @@ export const updateBookingStatus = async (req: AuthRequest, res: Response) => {
 export const getMyBookings = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+
+        if (mongoose.connection.readyState !== 1) {
+            return res.status(503).json({ message: 'Service temporarily unavailable' });
+        }
 
         const user = await User.findById(req.user.id);
         if (!user) return res.status(404).json({ message: 'User not found' });

@@ -14,7 +14,8 @@ export const getMyNotifications = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ notifications });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('getMyNotifications error:', error);
+        res.status(500).json({ message: error.message || 'Server error' });
     }
 };
 
@@ -27,7 +28,8 @@ export const markAsRead = async (req: AuthRequest, res: Response) => {
 
         res.status(200).json({ message: 'Notification marked as read' });
     } catch (error: any) {
-        res.status(400).json({ message: error.message });
+        console.error('markAsRead error:', error);
+        res.status(500).json({ message: error.message || 'Server error' });
     }
 };
 

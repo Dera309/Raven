@@ -4,7 +4,11 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/raven_db');
+        mongoose.set('bufferCommands', false);
+        const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/raven_db', {
+            serverSelectionTimeoutMS: 2000,
+            connectTimeoutMS: 2000,
+        });
         
         if (!isProduction) {
             console.log(`✓ MongoDB Connected: ${conn.connection.host}`);

@@ -19,6 +19,13 @@ export const protect = async (req: AuthRequest, res: Response, next: NextFunctio
                 return res.status(401).json({ message: 'User not found' });
             }
 
+            /* 
+            // Check if user is verified
+            if (!req.user.isVerified) {
+                return res.status(403).json({ message: 'Please verify your email to access this resource' });
+            }
+            */
+
             next();
         } catch (error) {
             console.error(error);
