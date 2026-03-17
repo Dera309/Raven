@@ -2,7 +2,7 @@ services:
   # Backend API Service
   - type: web
     name: raven-api
-    env: node
+    runtime: node
     rootDir: server
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start
@@ -12,7 +12,7 @@ services:
       - key: PORT
         value: 8000
       - key: FRONTEND_URL
-        value: https://raven-client.onrender.com # Placeholder, update after frontend deployment
+        value: https://raven-1-es9u.onrender.com,https://raven-client.onrender.com
       - key: MONGO_URI
         sync: false
       - key: JWT_SECRET
@@ -31,7 +31,7 @@ services:
   # Frontend Next.js Service
   - type: web
     name: raven-client
-    env: node
+    runtime: node
     rootDir: client
     buildCommand: npm install --include=dev && npm run build
     startCommand: npm start

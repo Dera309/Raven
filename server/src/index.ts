@@ -68,6 +68,32 @@ const limiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
 });
+
+// CORS configuration - Moved up to handle preflight requests before rate limiting
+const allowedOrigins = process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',') : ['http://localhost:3000', 'http://localhost:3001'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        const isAllowed = allowedOrigins.some(allowedOrigin => {
+            const trimmedOrigin = allowedOrigin.trim();
+            return origin === trimmedOrigin || origin.startsWith(trimmedOrigin);
+        });
+
+        if (isAllowed) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+    exposedHeaders: ['Set-Cookie']
+}));
+
 app.use('/api/', limiter);
 
 // Stricter rate limit for auth routes
@@ -79,16 +105,6 @@ const authLimiter = rateLimit({
 });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
-
-// CORS configuration
-app.use(cors({
-    origin: process.env.NODE_ENV === 'production' 
-        ? process.env.FRONTEND_URL 
-        : ['http://localhost:3000', 'http://localhost:3001'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-}));
 
 // Body parser with size limits
 app.use(express.json({ limit: '10kb' }));
