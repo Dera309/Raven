@@ -15,12 +15,12 @@ export default function LazyImage({
     const [error, setError] = useState(false);
 
     useEffect(() => {
-        if (!src) return;
-        
-        const img = new Image();
-        img.src = src;
-        img.onload = () => setLoaded(true);
-        img.onerror = () => setError(true);
+        if (typeof src === 'string') {
+            const img = new Image();
+            img.src = src;
+            img.onload = () => setLoaded(true);
+            img.onerror = () => setError(true);
+        }
     }, [src]);
 
     return (
