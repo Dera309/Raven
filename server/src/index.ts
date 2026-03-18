@@ -44,42 +44,36 @@ const port = process.env.PORT || 8001;
 connectDB();
 
 // Initialize Socket.io after DB connection
-const socketInstance = initSocket(server);
-setSocketIO(socketInstance);
-
-// --- TEMPORARY DIAGNOSTIC MIDDLEWARE ---
+// --- MANUAL CORS & DIAGNOSTIC MIDDLEWARE ---
 app.use((req: Request, res: Response, next: NextFunction) => {
-    if (process.env.NODE_ENV === 'production') {
-        console.log(`[REQ DEBUG] ${req.method} ${req.url} | Origin: ${req.header('origin')} | Host: ${req.header('host')}`);
-        // Log sensitive headers only for debugging, then remove
-        console.log(`[HEADERS DEBUG] ${JSON.stringify(req.headers)}`);
+    const origin = req.header('origin');
+    
+    // Regex for any render.com or onrender.com subdomain
+    const renderRegex = /https?:\/\/.*\.?render\.com$/;
+    const isLocalhost = origin && (origin.includes('localhost') || origin.includes('127.0.0.1'));
+    const isAllowed = !origin || renderRegex.test(origin) || isLocalhost;
+
+    if (origin && isAllowed) {
+        res.setHeader('Access-Control-Allow-Origin', origin);
+        res.setHeader('Access-Control-Allow-Credentials', 'true');
+        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token');
+        res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
     }
+
+    if (process.env.NODE_ENV === 'production') {
+        console.log(`[CORS MANUAL] Method: ${req.method} | Origin: ${origin} | isAllowed: ${isAllowed}`);
+    }
+
+    // Handle Preflight
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(204);
+    }
+    
     next();
 });
 
-// 1. CORS Configuration (MUST be first to handle Preflight)
-const allowedOrigins = process.env.FRONTEND_URL
-    ? process.env.FRONTEND_URL.split(',').map(o => o.trim()).filter(Boolean)
-    : [
-        'http://localhost:3000',
-        'http://localhost:3001',
-        'http://localhost:5173',
-        'http://localhost:4173',
-    ];
-
-const corsOptions = {
-    // TEMPORARY: Allow all origins to isolate the issue
-    origin: true, 
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-CSRF-Token'],
-    exposedHeaders: ['Set-Cookie'],
-};
-
-app.options('*', cors(corsOptions));
-app.use(cors(corsOptions));
-
-// 2. Security Headers (Helmet)
+// Security Headers (Helmet) - MUST be after manual CORS to avoid header overriding issues in some environments
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
