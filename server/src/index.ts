@@ -47,6 +47,16 @@ connectDB();
 const socketInstance = initSocket(server);
 setSocketIO(socketInstance);
 
+// --- TEMPORARY DIAGNOSTIC MIDDLEWARE ---
+app.use((req: Request, res: Response, next: NextFunction) => {
+    if (process.env.NODE_ENV === 'production') {
+        console.log(`[REQ DEBUG] ${req.method} ${req.url} | Origin: ${req.header('origin')} | Host: ${req.header('host')}`);
+        // Log sensitive headers only for debugging, then remove
+        console.log(`[HEADERS DEBUG] ${JSON.stringify(req.headers)}`);
+    }
+    next();
+});
+
 // 1. CORS Configuration (MUST be first to handle Preflight)
 const allowedOrigins = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map(o => o.trim()).filter(Boolean)
@@ -58,28 +68,8 @@ const allowedOrigins = process.env.FRONTEND_URL
     ];
 
 const corsOptions = {
-    origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-        if (!origin) return callback(null, true);
-
-        // Regex for any render.com or onrender.com subdomain
-        const renderRegex = /https?:\/\/.*\.?render\.com$/;
-        const isAllowed = allowedOrigins.includes(origin) || renderRegex.test(origin);
-
-        if (isProduction) {
-            console.log(`[CORS DEBUG] Origin: ${origin} | isAllowed: ${isAllowed} | Method: unknown`);
-        }
-
-        // Dev convenience: allow localhost
-        if (!isAllowed && process.env.NODE_ENV !== 'production') {
-            try {
-                const url = new URL(origin);
-                const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
-                if (isLocalhost) return callback(null, true);
-            } catch {}
-        }
-
-        return callback(null, isAllowed);
-    },
+    // TEMPORARY: Allow all origins to isolate the issue
+    origin: true, 
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept', 'X-CSRF-Token'],
