@@ -6,8 +6,9 @@ const connectDB = async () => {
     try {
         mongoose.set('bufferCommands', false);
         const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/raven_db', {
-            serverSelectionTimeoutMS: 2000,
-            connectTimeoutMS: 2000,
+            serverSelectionTimeoutMS: 5000,
+            connectTimeoutMS: 5000,
+            family: 4, // Force IPv4 to avoid SSL Alert 80 internal error issues
         });
         
         if (!isProduction) {
@@ -18,10 +19,10 @@ const connectDB = async () => {
         
         // Only show detailed connection help in development
         if (!isProduction) {
-            console.error('\n⚠️  IMPORTANT: Please whitelist your IP address in MongoDB Atlas:');
-            console.error('   1. Go to https://cloud.mongodb.com');
-            console.error('   2. Navigate to Network Access');
-            console.error('   3. Add your current IP address or use 0.0.0.0/0 for development\n');
+            console.error('\n⚠️  IMPORTANT: MongoDB Connection Failed!');
+            console.error('1. Whitelist your IP in MongoDB Atlas: https://cloud.mongodb.com -> Network Access');
+            console.error('2. Ensure your MONGO_URI is correct in the .env file.');
+            console.error('3. Try using 0.0.0.0/0 temporarily to test if it is a whitelist issue.\n');
         }
         
         console.error('Server will continue running but database operations will fail until connected.\n');
