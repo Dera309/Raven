@@ -47,71 +47,35 @@ connectDB();
 const socketInstance = initSocket(server);
 setSocketIO(socketInstance);
 
-// Security Headers
-app.use(helmet({
-    contentSecurityPolicy: {
-        directives: {
-            defaultSrc: ["'self'"],
-            styleSrc: ["'self'", "'unsafe-inline'"],
-            scriptSrc: ["'self'"],
-            imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https:", "wss:"],
-        },
-    },
-    crossOriginEmbedderPolicy: false,
-}));
-
-// Rate limiting - General API
-const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // limit each IP to 100 requests per windowMs
-    message: 'Too many requests from this IP, please try again later',
-    standardHeaders: true,
-    legacyHeaders: false,
-});
-
-// CORS configuration - handle preflight requests before rate limiting
+// 1. CORS Configuration (MUST be first to handle Preflight)
 const allowedOrigins = process.env.FRONTEND_URL
     ? process.env.FRONTEND_URL.split(',').map(o => o.trim()).filter(Boolean)
     : [
         'http://localhost:3000',
         'http://localhost:3001',
-        'http://localhost:5173', // Vite default
-        'http://localhost:4173', // Vite preview default
+        'http://localhost:5173',
+        'http://localhost:4173',
     ];
 
 const corsOptions = {
     origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
-        // Allow requests with no origin (like curl/Postman/mobile apps)
         if (!origin) return callback(null, true);
 
-        let isAllowed = allowedOrigins.some(allowedOrigin => origin === allowedOrigin);
+        // Regex for any render.com or onrender.com subdomain
+        const renderRegex = /https?:\/\/.*\.?render\.com$/;
+        const isAllowed = allowedOrigins.includes(origin) || renderRegex.test(origin);
 
-        // Automatically allow any onrender.com subdomains in production
-        // Using includes to be more robust against varying Render URL formats
-        if (!isAllowed && origin.includes('.onrender.com')) {
-            isAllowed = true;
+        if (isProduction) {
+            console.log(`[CORS DEBUG] Origin: ${origin} | isAllowed: ${isAllowed} | Method: unknown`);
         }
 
-        // Diagnostic logging to help troubleshoot Render CORS issues
-        if (process.env.NODE_ENV === 'production') {
-            console.log(`[CORS DEBUG] Origin: ${origin} | Allowed: ${isAllowed} | Expected: ${allowedOrigins.join(', ')}`);
-        }
-
-        // Dev convenience: allow localhost on any port unless explicitly restricted
+        // Dev convenience: allow localhost
         if (!isAllowed && process.env.NODE_ENV !== 'production') {
             try {
                 const url = new URL(origin);
-                const isLocalhost =
-                    url.hostname === 'localhost' ||
-                    url.hostname === '127.0.0.1' ||
-                    url.hostname === '::1';
-                if (isLocalhost && (url.protocol === 'http:' || url.protocol === 'https:')) {
-                    isAllowed = true;
-                }
-            } catch {
-                // ignore invalid Origin header
-            }
+                const isLocalhost = ['localhost', '127.0.0.1', '::1'].includes(url.hostname);
+                if (isLocalhost) return callback(null, true);
+            } catch {}
         }
 
         return callback(null, isAllowed);
@@ -122,10 +86,31 @@ const corsOptions = {
     exposedHeaders: ['Set-Cookie'],
 };
 
-// Handle ALL OPTIONS preflight requests immediately — before rate limiting and CSRF
 app.options('*', cors(corsOptions));
 app.use(cors(corsOptions));
 
+// 2. Security Headers (Helmet)
+app.use(helmet({
+    contentSecurityPolicy: {
+        directives: {
+            defaultSrc: ["'self'"],
+            styleSrc: ["'self'", "'unsafe-inline'"],
+            scriptSrc: ["'self'"],
+            imgSrc: ["'self'", "data:", "https:", "blob:"],
+            connectSrc: ["'self'", "https:", "wss:", "*.render.com", "*.onrender.com"],
+        },
+    },
+    crossOriginEmbedderPolicy: false,
+}));
+
+// 3. Rate Limiting
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100,
+    message: 'Too many requests from this IP, please try again later',
+    standardHeaders: true,
+    legacyHeaders: false,
+});
 app.use('/api/', limiter);
 
 // Stricter rate limit for auth routes
