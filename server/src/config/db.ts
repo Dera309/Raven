@@ -10,12 +10,14 @@ const connectDB = async () => {
         mongoose.set('bufferCommands', false);
         const uriToUse = atlasUri || localUri;
         const maskedUri = uriToUse.replace(/:([^@]+)@/, ':****@');
-        console.log(`📡 Attempting MongoDB connection to: ${maskedUri}`);
+        console.log(`[DB-V2] 📡 Attempting MongoDB connection to: ${maskedUri}`);
 
         const conn = await mongoose.connect(uriToUse, {
             serverSelectionTimeoutMS: 5000,
             connectTimeoutMS: 5000,
-            family: 4, // Force IPv4 to avoid SSL Alert 80 internal error issues
+            family: 4, // Force IPv4
+            tls: true,
+            tlsAllowInvalidCertificates: true, // DEBUG ONLY: bypass local cert issues
         });
         
         if (!isProduction) {
@@ -67,7 +69,14 @@ mongoose.connection.on('connected', () => {
 });
 
 mongoose.connection.on('error', (err) => {
-    console.error('✗ Mongoose connection error:', err.message);
+    const errMessage = err.message || '';
+    console.error('✗ Mongoose connection error:', errMessage);
+    
+    if (errMessage.includes('alert number 80') || errMessage.includes('SSL routines')) {
+        console.error('\n🛡️  SECURITY WARNING: SSL Internal Error (Alert 80) detected.');
+        console.error('This is usually an IP Whitelisting issue on MongoDB Atlas.');
+        console.log('Follow the instructions above to fix it.\n');
+    }
 });
 
 mongoose.connection.on('disconnected', () => {
