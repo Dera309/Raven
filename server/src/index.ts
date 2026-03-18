@@ -88,8 +88,14 @@ const corsOptions = {
         let isAllowed = allowedOrigins.some(allowedOrigin => origin === allowedOrigin);
 
         // Automatically allow any onrender.com subdomains in production
-        if (!isAllowed && origin.endsWith('.onrender.com')) {
+        // Using includes to be more robust against varying Render URL formats
+        if (!isAllowed && origin.includes('.onrender.com')) {
             isAllowed = true;
+        }
+
+        // Diagnostic logging to help troubleshoot Render CORS issues
+        if (process.env.NODE_ENV === 'production') {
+            console.log(`[CORS DEBUG] Origin: ${origin} | Allowed: ${isAllowed} | Expected: ${allowedOrigins.join(', ')}`);
         }
 
         // Dev convenience: allow localhost on any port unless explicitly restricted
