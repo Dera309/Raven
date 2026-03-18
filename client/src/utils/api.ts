@@ -32,9 +32,9 @@ const handleResponse = async (response: Response) => {
     return data;
 };
 
-let cachedCsrfToken: string | null = null;
+let cachedCsrfToken: string | undefined = undefined;
 
-const getCsrfToken = async () => {
+const getCsrfToken = async (): Promise<string | undefined> => {
     if (cachedCsrfToken) return cachedCsrfToken;
     try {
         const response = await fetch(`${API_URL}/csrf-token`, {
@@ -45,17 +45,18 @@ const getCsrfToken = async () => {
         return cachedCsrfToken;
     } catch (error) {
         console.error('Failed to fetch CSRF token:', error);
-        return null;
+        return undefined;
     }
 };
 
 export const api = {
     get: async (endpoint: string) => {
         const token = localStorage.getItem('token');
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+
         const response = await fetch(`${API_URL}${endpoint}`, {
-            headers: {
-                Authorization: `Bearer ${token}`,
-            },
+            headers,
             credentials: 'include'
         });
         return handleResponse(response);
@@ -65,14 +66,10 @@ export const api = {
         const token = localStorage.getItem('token');
         const csrfToken = await getCsrfToken();
         
-        const headers: any = {
-            Authorization: `Bearer ${token}`,
-            'X-CSRF-Token': csrfToken,
-        };
-
-        if (!isFormData) {
-            headers['Content-Type'] = 'application/json';
-        }
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+        if (!isFormData) headers['Content-Type'] = 'application/json';
 
         const response = await fetch(`${API_URL}${endpoint}`, {
             method: 'POST',
@@ -88,13 +85,15 @@ export const api = {
         const token = localStorage.getItem('token');
         const csrfToken = await getCsrfToken();
         
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+        };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+
         const response = await fetch(`${API_URL}${endpoint}`, {
             method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-                'X-CSRF-Token': csrfToken,
-            },
+            headers,
             body: JSON.stringify(body),
             credentials: 'include'
         });
@@ -105,12 +104,13 @@ export const api = {
         const token = localStorage.getItem('token');
         const csrfToken = await getCsrfToken();
         
+        const headers: Record<string, string> = {};
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+
         const response = await fetch(`${API_URL}${endpoint}`, {
             method: 'DELETE',
-            headers: {
-                Authorization: `Bearer ${token}`,
-                'X-CSRF-Token': csrfToken,
-            },
+            headers,
             credentials: 'include'
         });
         return handleResponse(response);
@@ -120,13 +120,15 @@ export const api = {
         const token = localStorage.getItem('token');
         const csrfToken = await getCsrfToken();
         
+        const headers: Record<string, string> = {
+            'Content-Type': 'application/json'
+        };
+        if (token) headers['Authorization'] = `Bearer ${token}`;
+        if (csrfToken) headers['X-CSRF-Token'] = csrfToken;
+
         const response = await fetch(`${API_URL}${endpoint}`, {
             method: 'PATCH',
-            headers: {
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${token}`,
-                'X-CSRF-Token': csrfToken,
-            },
+            headers,
             body: body ? JSON.stringify(body) : undefined,
             credentials: 'include'
         });
