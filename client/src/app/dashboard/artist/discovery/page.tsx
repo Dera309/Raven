@@ -5,6 +5,7 @@ import { api } from '@/utils/api';
 import Button from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import { useRouter } from 'next/navigation';
+import LazyImage from '@/components/ui/LazyImage';
 
 interface Vixen {
     _id: string;
@@ -170,7 +171,7 @@ function VixenCard({ vixen }: { vixen: Vixen }) {
     return (
         <div className="group bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10">
             {/* Media Preview */}
-            <div className="relative h-64 bg-zinc-800">
+            <div className="relative h-64">
                 {mainMedia ? (
                     <img
                         src={mainMedia.url}

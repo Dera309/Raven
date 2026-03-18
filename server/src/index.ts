@@ -87,6 +87,11 @@ const corsOptions = {
 
         let isAllowed = allowedOrigins.some(allowedOrigin => origin === allowedOrigin);
 
+        // Automatically allow any onrender.com subdomains in production
+        if (!isAllowed && origin.endsWith('.onrender.com')) {
+            isAllowed = true;
+        }
+
         // Dev convenience: allow localhost on any port unless explicitly restricted
         if (!isAllowed && process.env.NODE_ENV !== 'production') {
             try {
