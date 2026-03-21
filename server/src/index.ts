@@ -44,34 +44,34 @@ const port = process.env.PORT || 8001;
 connectDB();
 
 // Initialize Socket.io after DB connection
-// --- MANUAL CORS & DIAGNOSTIC MIDDLEWARE ---
-app.use((req: Request, res: Response, next: NextFunction) => {
-    const origin = req.header('origin');
-    
-    // Regex for any render.com or onrender.com subdomain
-    const renderRegex = /https?:\/\/.*\.?render\.com$/;
-    const isLocalhost = origin && (origin.includes('localhost') || origin.includes('127.0.0.1'));
-    const isAllowed = !origin || renderRegex.test(origin) || isLocalhost;
+  // --- MANUAL CORS & DIAGNOSTIC MIDDLEWARE ---
+  app.use((req: Request, res: Response, next: NextFunction) => {
+      const origin = req.header('origin');
+      
+      // Regex for any render.com or onrender.com subdomain (with optional port)
+      const renderRegex = /^https?:\/\/(?:[^.]+\.)*?(render|onrender)\.com(:[0-9]+)?$/i;
+      const isLocalhost = origin && (origin.includes('localhost') || origin.includes('127.0.0.1'));
+      const isAllowed = !origin || renderRegex.test(origin) || isLocalhost;
 
-    if (origin && isAllowed) {
-        res.setHeader('Access-Control-Allow-Origin', origin);
-        res.setHeader('Access-Control-Allow-Credentials', 'true');
-        res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-        res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token');
-        res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-    }
+      if (origin && isAllowed) {
+          res.setHeader('Access-Control-Allow-Origin', origin);
+          res.setHeader('Access-Control-Allow-Credentials', 'true');
+          res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
+          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token');
+          res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
+      }
 
-    if (process.env.NODE_ENV === 'production') {
-        console.log(`[CORS MANUAL] Method: ${req.method} | Origin: ${origin} | isAllowed: ${isAllowed}`);
-    }
+      if (process.env.NODE_ENV === 'production') {
+          console.log(`[CORS MANUAL] Method: ${req.method} | Origin: ${origin} | isAllowed: ${isAllowed} | Regex test: ${origin ? renderRegex.test(origin) : 'N/A'}`);
+      }
 
-    // Handle Preflight
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(204);
-    }
-    
-    next();
-});
+      // Handle Preflight
+      if (req.method === 'OPTIONS') {
+          return res.sendStatus(204);
+      }
+      
+      next();
+  });
 
 // Security Headers (Helmet) - MUST be after manual CORS to avoid header overriding issues in some environments
 app.use(helmet({
