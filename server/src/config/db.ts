@@ -46,7 +46,7 @@ const connectDB = async () => {
             hostname: (error as any).hostname,
             // Don't log sensitive info in error messages
         });
-        
+
         // Check for specific SSL/TLS errors common with Atlas whitelist issues
         if (errMessage.includes('alert number 80') || errMessage.includes('SSL routines')) {
             console.error('\n🛡️  SECURITY WARNING: SSL Internal Error (Alert 80) detected.');
