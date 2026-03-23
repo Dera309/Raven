@@ -4,9 +4,8 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
+import xss from 'xss-clean';
 import hpp from 'hpp';
-import cookieParser from 'cookie-parser';
-import csrf from 'csurf';
 import connectDB from './config/db';
 import authRoutes from './routes/authRoutes';
 import profileRoutes from './routes/profileRoutes';
@@ -38,48 +37,16 @@ console.log(`🚀 Raven Server starting in ${isProduction ? 'PRODUCTION' : 'DEVE
 
 const app: Express = express();
 const server = http.createServer(app);
-const port = process.env.PORT || 8001;
-
-const basePort = Number(port);
-let portToTry = basePort;
-let portAttempt = 0;
-const maxPortAttempts = 10;
+const port = process.env.PORT || 8000;
 
 // Connect to Database first
 connectDB();
 
 // Initialize Socket.io after DB connection
-  // --- MANUAL CORS & DIAGNOSTIC MIDDLEWARE ---
-  app.use((req: Request, res: Response, next: NextFunction) => {
-      const origin = req.header('origin');
-      
-      // Regex for any render.com or onrender.com subdomain (with optional port)
-      const renderRegex = /^https?:\/\/(?:[^.]+\.)*?(render|onrender)\.com(:[0-9]+)?$/i;
-      const isLocalhost = origin && (origin.includes('localhost') || origin.includes('127.0.0.1'));
-      // Treat empty origin as no origin (same as null/undefined)
-      const isValidOrigin = origin && origin.length > 0;
-      const isAllowed = !isValidOrigin || renderRegex.test(origin) || isLocalhost;
+const socketInstance = initSocket(server);
+setSocketIO(socketInstance);
 
-      if (isValidOrigin && isAllowed) {
-          res.setHeader('Access-Control-Allow-Origin', origin);
-          res.setHeader('Access-Control-Allow-Credentials', 'true');
-          res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,PATCH,OPTIONS');
-          res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, X-CSRF-Token');
-          res.setHeader('Access-Control-Expose-Headers', 'Set-Cookie');
-      }
-
-      // Log CORS decisions for all requests to help debug
-      console.log(`[CORS MANUAL] Method: ${req.method} | Origin: "${origin}" | isValidOrigin: ${isValidOrigin} | isAllowed: ${isAllowed} | Regex test: ${isValidOrigin ? renderRegex.test(origin) : 'N/A'}`);
-
-      // Handle Preflight
-      if (req.method === 'OPTIONS') {
-          return res.sendStatus(204);
-      }
-      
-      next();
-  });
-
-// Security Headers (Helmet) - MUST be after manual CORS to avoid header overriding issues in some environments
+// Security Headers
 app.use(helmet({
     contentSecurityPolicy: {
         directives: {
@@ -87,16 +54,16 @@ app.use(helmet({
             styleSrc: ["'self'", "'unsafe-inline'"],
             scriptSrc: ["'self'"],
             imgSrc: ["'self'", "data:", "https:", "blob:"],
-            connectSrc: ["'self'", "https:", "wss:", "*.render.com", "*.onrender.com"],
+            connectSrc: ["'self'", "https:", "wss:"],
         },
     },
     crossOriginEmbedderPolicy: false,
 }));
 
-// 3. Rate Limiting
+// Rate limiting - General API
 const limiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 100,
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
     message: 'Too many requests from this IP, please try again later',
     standardHeaders: true,
     legacyHeaders: false,
@@ -113,6 +80,35 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
+// CORS configuration
+app.use(cors({
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true);
+        
+        // Allow localhost for development
+        if (origin.includes('localhost') || origin.includes('127.0.0.1')) {
+            return callback(null, true);
+        }
+        
+        // Allow render.com and onrender.com domains
+        if (origin.includes('render.com') || origin.includes('onrender.com')) {
+            return callback(null, true);
+        }
+        
+        // Allow the specific frontend URL from env
+        if (origin === process.env.FRONTEND_URL) {
+            return callback(null, true);
+        }
+        
+        // Reject other origins
+        callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
+}));
+
 // Body parser with size limits
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true, limit: '10kb' }));
@@ -120,22 +116,13 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 // Data sanitization against NoSQL injection
 app.use(mongoSanitize());
 
+// Data sanitization against XSS
+app.use(xss());
+
 // Prevent parameter pollution
 app.use(hpp({
     whitelist: ['location', 'rate', 'genre'] // Allow duplicate query params for filters
 }));
-
-// Cookie parser for CSRF
-app.use(cookieParser());
-
-// CSRF Protection
-const csrfProtection = csrf({ cookie: true });
-// Apply to all routes except the token fetcher
-app.get('/api/csrf-token', csrfProtection, (req: Request, res: Response) => {
-    res.json({ csrfToken: req.csrfToken() });
-});
-
-app.use(csrfProtection);
 
 // Force HTTPS in production
 if (process.env.NODE_ENV === 'production') {
@@ -164,14 +151,8 @@ app.get('/', (req: Request, res: Response) => {
 
 // Global error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-    // ALWAYS log the full error in the server console for debugging
-    console.error('SERVER ERROR:', err);
+    console.error('Error:', err.message);
     
-    // Handle CSRF errors
-    if (err.code === 'EBADCSRFTOKEN') {
-        return res.status(403).json({ message: 'Form has been tampered with or CSRF token is invalid' });
-    }
-
     // Don't leak error details in production
     if (process.env.NODE_ENV === 'production') {
         res.status(err.status || 500).json({
@@ -186,50 +167,10 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-server.listen(portToTry, () => {
+server.listen(port, () => {
     const protocol = isProduction ? 'https' : 'http';
-    console.log(`✅ Raven API Server running on ${protocol}://localhost:${portToTry}`);
+    console.log(`✅ Raven API Server running on ${protocol}://localhost:${port}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV}`);
-});
-
-server.on('error', (err: NodeJS.ErrnoException) => {
-    if (err.code === 'EADDRINUSE') {
-        portAttempt += 1;
-        const nextPort = portToTry + 1;
-
-        console.warn(`⚠️  Port ${portToTry} is already in use. Trying port ${nextPort}...`);
-        portToTry = nextPort;
-
-        if (portAttempt > maxPortAttempts) {
-            console.error(`❌ Could not find a free port after ${maxPortAttempts} attempts. Exiting.`);
-            process.exit(1);
-        }
-
-        // If the socket is currently bound, close it before rebinding.
-        try {
-            if (server.listening) {
-                server.close(() => {
-                    server.listen(portToTry, () => {
-                        const protocol = isProduction ? 'https' : 'http';
-                        console.log(`✅ Raven API Server running on ${protocol}://localhost:${portToTry}`);
-                        console.log(`📝 Environment: ${process.env.NODE_ENV}`);
-                    });
-                });
-            } else {
-                server.listen(portToTry, () => {
-                    const protocol = isProduction ? 'https' : 'http';
-                    console.log(`✅ Raven API Server running on ${protocol}://localhost:${portToTry}`);
-                    console.log(`📝 Environment: ${process.env.NODE_ENV}`);
-                });
-            }
-        } catch (e) {
-            console.error('❌ Failed during EADDRINUSE port retry:', (e as Error).message);
-            process.exit(1);
-        }
-    } else {
-        console.error('❌ Server error:', err.message);
-        process.exit(1);
-    }
 });
 
 // Handle unhandled promise rejections
@@ -247,8 +188,5 @@ process.on('uncaughtException', (err: Error) => {
     if (!isProduction) {
         console.error(err.stack);
     }
-    // Don't exit for EADDRINUSE — the server.on('error') handler already deals with it
-    if ((err as NodeJS.ErrnoException).code !== 'EADDRINUSE') {
-        process.exit(1);
-    }
+    process.exit(1);
 });
