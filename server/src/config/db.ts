@@ -1,6 +1,7 @@
 import mongoose from 'mongoose';
 
 const isProduction = process.env.NODE_ENV === 'production';
+// Fix for TypeScript compilation - ensuring proper connection typing
 
 const connectDB = async () => {
     const atlasUri = process.env.MONGO_URI;
@@ -10,9 +11,10 @@ const connectDB = async () => {
         mongoose.set('bufferCommands', false);
         const uriToUse = atlasUri || localUri;
         const maskedUri = uriToUse.replace(/:([^@]+)@/, ':****@');
+
         console.log(`[DB-V2] 📡 Attempting MongoDB connection to: ${maskedUri}`);
 
-        const conn = await mongoose.connect(uriToUse, {
+        await mongoose.connect(uriToUse, {
             serverSelectionTimeoutMS: 15000, // Increased timeout
             connectTimeoutMS: 15000,         // Increased timeout
             socketTimeoutMS: 45000,          // Socket timeout
@@ -30,8 +32,7 @@ const connectDB = async () => {
         });
         
         if (!isProduction) {
-            console.log(`✓ MongoDB Connected: ${conn.connection.host}`);
-            console.log(`  Pool size: ${conn.connection.connections[0]?.pool?.size ?? 'unknown'}`);
+            console.log(`✓ MongoDB Connected: ${mongoose.connection.host}`);
         }
     } catch (error) {
         const errMessage = (error as Error).message;
@@ -58,6 +59,7 @@ const connectDB = async () => {
 
         if (atlasUri && !isProduction) {
             console.log('⚠️  Falling back to local MongoDB for development...');
+
             try {
                 await mongoose.connect(localUri, {
                     serverSelectionTimeoutMS: 5000,
@@ -84,7 +86,7 @@ const connectDB = async () => {
         const delay = expDelay + jitter;
         
         console.log(`[Retry Attempt ${attempt}] Retrying MongoDB connection in ${Math.round(delay)}ms...`);
-        
+
         setTimeout(() => {
             console.log('Retrying MongoDB connection...');
             connectDB();

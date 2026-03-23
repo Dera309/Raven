@@ -40,6 +40,11 @@ const app: Express = express();
 const server = http.createServer(app);
 const port = process.env.PORT || 8001;
 
+const basePort = Number(port);
+let portToTry = basePort;
+let portAttempt = 0;
+const maxPortAttempts = 10;
+
 // Connect to Database first
 connectDB();
 
@@ -181,22 +186,46 @@ app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     }
 });
 
-server.listen(port, () => {
+server.listen(portToTry, () => {
     const protocol = isProduction ? 'https' : 'http';
-    console.log(`✅ Raven API Server running on ${protocol}://localhost:${port}`);
+    console.log(`✅ Raven API Server running on ${protocol}://localhost:${portToTry}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV}`);
 });
 
 server.on('error', (err: NodeJS.ErrnoException) => {
     if (err.code === 'EADDRINUSE') {
-        const nextPort = Number(port) + 1;
-        console.warn(`⚠️  Port ${port} is already in use. Trying port ${nextPort}...`);
-        server.close();
-        server.listen(nextPort, () => {
-            const protocol = isProduction ? 'https' : 'http';
-            console.log(`✅ Raven API Server running on ${protocol}://localhost:${nextPort}`);
-            console.log(`📝 Environment: ${process.env.NODE_ENV}`);
-        });
+        portAttempt += 1;
+        const nextPort = portToTry + 1;
+
+        console.warn(`⚠️  Port ${portToTry} is already in use. Trying port ${nextPort}...`);
+        portToTry = nextPort;
+
+        if (portAttempt > maxPortAttempts) {
+            console.error(`❌ Could not find a free port after ${maxPortAttempts} attempts. Exiting.`);
+            process.exit(1);
+        }
+
+        // If the socket is currently bound, close it before rebinding.
+        try {
+            if (server.listening) {
+                server.close(() => {
+                    server.listen(portToTry, () => {
+                        const protocol = isProduction ? 'https' : 'http';
+                        console.log(`✅ Raven API Server running on ${protocol}://localhost:${portToTry}`);
+                        console.log(`📝 Environment: ${process.env.NODE_ENV}`);
+                    });
+                });
+            } else {
+                server.listen(portToTry, () => {
+                    const protocol = isProduction ? 'https' : 'http';
+                    console.log(`✅ Raven API Server running on ${protocol}://localhost:${portToTry}`);
+                    console.log(`📝 Environment: ${process.env.NODE_ENV}`);
+                });
+            }
+        } catch (e) {
+            console.error('❌ Failed during EADDRINUSE port retry:', (e as Error).message);
+            process.exit(1);
+        }
     } else {
         console.error('❌ Server error:', err.message);
         process.exit(1);
