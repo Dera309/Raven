@@ -4,7 +4,19 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import mongoSanitize from 'express-mongo-sanitize';
-import xss from 'xss-clean';
+import xss from 'xss';
+
+// XSS middleware
+const xssMiddleware = (req: any, res: any, next: any) => {
+    if (req.body) {
+        Object.keys(req.body).forEach(key => {
+            if (typeof req.body[key] === 'string') {
+                req.body[key] = xss(req.body[key]);
+            }
+        });
+    }
+    next();
+};
 import hpp from 'hpp';
 import connectDB from './config/db';
 import authRoutes from './routes/authRoutes';
@@ -117,7 +129,7 @@ app.use(express.urlencoded({ extended: true, limit: '10kb' }));
 app.use(mongoSanitize());
 
 // Data sanitization against XSS
-app.use(xss());
+app.use(xssMiddleware);
 
 // Prevent parameter pollution
 app.use(hpp({
