@@ -161,6 +161,16 @@ app.get('/', (req: Request, res: Response) => {
     res.send('Raven API Server Running');
 });
 
+// 404 handler for undefined routes
+app.use((req: Request, res: Response) => {
+    console.warn(`404 Not Found: ${req.method} ${req.path}`);
+    res.status(404).json({
+        message: 'Route not found',
+        path: req.path,
+        method: req.method
+    });
+});
+
 // Global error handling middleware
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
     console.error('Error:', err.message);
