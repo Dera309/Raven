@@ -50,6 +50,16 @@ if (!process.env.API_URL) {
     process.env.API_URL = `${protocol}://localhost:${port}`;
 }
 
+// Log Cloudinary configuration status
+if (process.env.CLOUDINARY_CLOUD_NAME && process.env.CLOUDINARY_API_KEY && process.env.CLOUDINARY_API_SECRET) {
+    console.log('✅ Cloudinary credentials found in environment');
+} else {
+    console.warn('⚠️  Cloudinary credentials not found. Check your .env file.');
+    console.warn(`   CLOUDINARY_CLOUD_NAME: ${process.env.CLOUDINARY_CLOUD_NAME ? 'SET' : 'NOT SET'}`);
+    console.warn(`   CLOUDINARY_API_KEY: ${process.env.CLOUDINARY_API_KEY ? 'SET' : 'NOT SET'}`);
+    console.warn(`   CLOUDINARY_API_SECRET: ${process.env.CLOUDINARY_API_SECRET ? 'SET' : 'NOT SET'}`);
+}
+
 // Log startup in production without exposing details
 const isProduction = process.env.NODE_ENV === 'production';
 console.log(`🚀 Raven Server starting in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);
