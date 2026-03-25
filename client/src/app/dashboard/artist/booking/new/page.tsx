@@ -78,17 +78,17 @@ function BookingForm() {
     if (!vixen && !loading) return <div className="p-20 text-center text-red-500">Vixen not found.</div>;
 
     return (
-        <div className="p-6 max-w-2xl mx-auto min-h-screen">
-            <header className="mb-10 text-center">
-                <div className="w-20 h-20 mx-auto mb-4 rounded-full border-2 border-purple-500 overflow-hidden">
+        <div className="p-4 sm:p-6 max-w-2xl mx-auto min-h-screen">
+            <header className="mb-8 sm:mb-10 text-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-4 rounded-full border-2 border-purple-500 overflow-hidden">
                     <img
                         src={vixen.profilePicture || '/default-avatar.png'}
                         alt={vixen.name}
                         className="w-full h-full object-cover"
                     />
                 </div>
-                <h1 className="text-3xl font-bold">Book {vixen.name}</h1>
-                <p className="text-gray-400 mt-2">Send a project request to start collaborating.</p>
+                <h1 className="text-2xl sm:text-3xl font-bold">Book {vixen.name}</h1>
+                <p className="text-gray-400 mt-2 text-sm sm:text-base">Send a project request to start collaborating.</p>
             </header>
 
             {success ? (

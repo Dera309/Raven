@@ -23,8 +23,8 @@ export default function ConversationList({ conversations, currentUserId, activeI
 
     return (
         <div className="h-full flex flex-col bg-zinc-900/30 rounded-3xl border border-zinc-800 overflow-hidden">
-            <header className="p-6 border-b border-zinc-800">
-                <h2 className="text-xl font-bold text-white">Messages</h2>
+            <header className="p-4 sm:p-6 border-b border-zinc-800">
+                <h2 className="text-lg sm:text-xl font-bold text-white">Messages</h2>
             </header>
             <div className="flex-1 overflow-y-auto p-2 space-y-2">
                 {conversations.length > 0 ? (
@@ -53,7 +53,7 @@ export default function ConversationList({ conversations, currentUserId, activeI
                                 <div className="flex-1 min-w-0">
                                     <div className="flex justify-between items-start mb-1">
                                         <h4 className="font-bold text-white truncate text-sm">{recipient?.name}</h4>
-                                        <span className="text-[10px] text-zinc-500 whitespace-nowrap">
+                                        <span className="text-[10px] text-zinc-500 flex-shrink-0 max-w-[100px] truncate">
                                             {conv.lastMessageAt ? new Date(conv.lastMessageAt).toLocaleDateString([], { month: 'short', day: 'numeric' }) : ''}
                                         </span>
                                     </div>

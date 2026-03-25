@@ -83,7 +83,7 @@ export default function NotificationBell() {
             {isOpen && (
                 <>
                     <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)}></div>
-                    <div className="absolute right-0 mt-2 w-80 bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
+                    <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl z-50 overflow-hidden">
                         <header className="p-4 border-b border-zinc-800 flex justify-between items-center">
                             <h3 className="font-bold text-sm">Notifications</h3>
                             <button className="text-[10px] text-zinc-500 hover:text-purple-400 uppercase tracking-widest font-bold">Mark all read</button>

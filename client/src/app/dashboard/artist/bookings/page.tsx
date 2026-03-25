@@ -50,13 +50,13 @@ export default function ArtistBookingsPage() {
     };
 
     return (
-        <div className="p-6 max-w-5xl mx-auto min-h-screen bg-black text-white">
-            <header className="mb-8 flex justify-between items-center">
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto min-h-screen bg-black text-white">
+            <header className="mb-6 sm:mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold">My Bookings</h1>
-                    <p className="text-gray-400 mt-1">Track your project requests and collaborations.</p>
+                    <h1 className="text-2xl sm:text-3xl font-bold">My Bookings</h1>
+                    <p className="text-gray-400 mt-1 text-sm sm:text-base">Track your project requests and collaborations.</p>
                 </div>
-                <Button variant="gradient" onClick={() => router.push('/dashboard/artist/discovery')}>
+                <Button variant="gradient" onClick={() => router.push('/dashboard/artist/discovery')} className="w-full sm:w-auto">
                     Find Vixens
                 </Button>
             </header>

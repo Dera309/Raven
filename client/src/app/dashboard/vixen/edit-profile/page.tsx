@@ -127,11 +127,11 @@ export default function VixenEditProfile() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-900 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-900 text-gray-100 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
             <div className="max-w-3xl mx-auto">
                 <div className="bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-700">
-                    <div className="px-8 py-10">
-                        <h1 className="text-3xl font-extrabold text-white mb-8 border-b border-gray-700 pb-4">
+                    <div className="px-4 sm:px-8 py-6 sm:py-10">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold text-white mb-6 sm:mb-8 border-b border-gray-700 pb-4">
                             Edit Vixen Profile
                         </h1>
 
@@ -227,7 +227,7 @@ export default function VixenEditProfile() {
 
                             <div className="space-y-4">
                                 <h3 className="text-xl font-bold text-white border-b border-gray-700 pb-2">Measurements</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
                                     <Input
                                         label="Height"
                                         name="measurements.height"

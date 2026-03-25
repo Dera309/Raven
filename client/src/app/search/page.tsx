@@ -85,9 +85,9 @@ export default function SearchPage() {
             </nav>
 
             <main className="pt-32 pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
-                <header className="mb-12">
-                    <h1 className="text-4xl font-bold mb-4">Find Your Perfect Talent</h1>
-                    <p className="text-gray-400 text-lg">Browse and connect with top-tier video vixens and models.</p>
+                <header className="mb-8 sm:mb-12">
+                    <h1 className="text-3xl sm:text-4xl font-bold mb-4">Find Your Perfect Talent</h1>
+                    <p className="text-gray-400 text-base sm:text-lg">Browse and connect with top-tier video vixens and models.</p>
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">

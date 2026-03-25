@@ -62,16 +62,16 @@ export default function ArtistBookingDetailPage() {
     };
 
     return (
-        <div className="p-6 max-w-4xl mx-auto min-h-screen">
-            <header className="mb-8 flex items-center gap-4">
+        <div className="p-4 sm:p-6 max-w-4xl mx-auto min-h-screen">
+            <header className="mb-6 sm:mb-8 flex items-center gap-4">
                 <Button variant="outline" className="p-2 rounded-full" onClick={() => router.back()}>
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
                     </svg>
                 </Button>
                 <div>
-                    <h1 className="text-2xl font-bold">{booking.projectTitle}</h1>
-                    <p className="text-gray-400 text-sm">Booking ID: {booking._id}</p>
+                    <h1 className="text-xl sm:text-2xl font-bold">{booking.projectTitle}</h1>
+                    <p className="text-gray-400 text-xs sm:text-sm">Booking ID: {booking._id}</p>
                 </div>
             </header>
 

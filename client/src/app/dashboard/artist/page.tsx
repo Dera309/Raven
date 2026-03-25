@@ -33,7 +33,7 @@ export default function ArtistDashboard() {
 
             <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
                 <div className="px-4 py-6 sm:px-0">
-                    <div className="border-4 border-dashed border-gray-200 rounded-lg h-96 flex flex-col items-center justify-center p-4">
+                    <div className="border-4 border-dashed border-gray-200 rounded-lg min-h-96 flex flex-col items-center justify-center p-4">
                         <h2 className="text-xl sm:text-2xl font-bold text-gray-700 mb-4 text-center">Artist Dashboard</h2>
                         <p className="text-gray-500 mb-6 text-center text-sm sm:text-base">Start finding talent for your next video.</p>
                         <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 justify-center w-full max-w-md">

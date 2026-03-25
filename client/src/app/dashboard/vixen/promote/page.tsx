@@ -68,12 +68,12 @@ export default function PromoteProfilePage() {
     if (loading) return <div className="p-20 text-center text-gray-500">Loading promotion status...</div>;
 
     return (
-        <div className="p-6 max-w-6xl mx-auto min-h-screen">
-            <header className="mb-12 text-center">
-                <h1 className="text-4xl font-black bg-gradient-to-r from-amber-400 via-purple-500 to-pink-600 bg-clip-text text-transparent">
+        <div className="p-4 sm:p-6 max-w-6xl mx-auto min-h-screen">
+            <header className="mb-8 sm:mb-12 text-center">
+                <h1 className="text-2xl sm:text-4xl font-black bg-gradient-to-r from-amber-400 via-purple-500 to-pink-600 bg-clip-text text-transparent">
                     Boost Your Visibility
                 </h1>
-                <p className="text-gray-400 mt-4 text-lg">Promote your profile to the top of search results and attract more music artists.</p>
+                <p className="text-gray-400 mt-4 text-base sm:text-lg">Promote your profile to the top of search results and attract more music artists.</p>
             </header>
 
             {status?.featured && (
@@ -140,39 +140,41 @@ export default function PromoteProfilePage() {
                 ))}
             </div>
 
-            <section className="mt-20">
-                <h2 className="text-2xl font-bold mb-8 text-center">Promotion History</h2>
-                <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800 overflow-hidden">
-                    <table className="w-full text-left">
-                        <thead>
-                            <tr className="border-b border-zinc-800 bg-zinc-900">
-                                <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Date</th>
-                                <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Tier</th>
-                                <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Amount</th>
-                                <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {status?.history?.length > 0 ? (
-                                status.history.map((ad: any) => (
-                                    <tr key={ad._id} className="border-b border-zinc-900 hover:bg-zinc-800/30">
-                                        <td className="p-4 text-sm text-gray-300">{new Date(ad.createdAt).toLocaleDateString()}</td>
-                                        <td className="p-4 text-sm font-medium text-white">{ad.tier.replace('_', ' ')}</td>
-                                        <td className="p-4 text-sm text-gray-300">NGN {ad.amountPaid.toLocaleString()}</td>
-                                        <td className="p-4">
-                                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${ad.status === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
-                                                {ad.status}
-                                            </span>
-                                        </td>
-                                    </tr>
-                                ))
-                            ) : (
-                                <tr>
-                                    <td colSpan={4} className="p-8 text-center text-gray-500 italic">No previous promotions found.</td>
+            <section className="mt-12 sm:mt-20">
+                <h2 className="text-xl sm:text-2xl font-bold mb-6 sm:mb-8 text-center">Promotion History</h2>
+                <div className="bg-zinc-900/50 rounded-3xl border border-zinc-800">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full w-full text-left">
+                            <thead>
+                                <tr className="border-b border-zinc-800 bg-zinc-900">
+                                    <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Date</th>
+                                    <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Tier</th>
+                                    <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Amount</th>
+                                    <th className="p-4 text-xs font-bold text-zinc-500 uppercase tracking-widest">Status</th>
                                 </tr>
-                            )}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                {status?.history?.length > 0 ? (
+                                    status.history.map((ad: any) => (
+                                        <tr key={ad._id} className="border-b border-zinc-900 hover:bg-zinc-800/30">
+                                            <td className="p-4 text-sm text-gray-300">{new Date(ad.createdAt).toLocaleDateString()}</td>
+                                            <td className="p-4 text-sm font-medium text-white">{ad.tier.replace('_', ' ')}</td>
+                                            <td className="p-4 text-sm text-gray-300">NGN {ad.amountPaid.toLocaleString()}</td>
+                                            <td className="p-4">
+                                                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-tighter ${ad.status === 'active' ? 'bg-green-500/10 text-green-500 border border-green-500/20' : 'bg-red-500/10 text-red-500 border border-red-500/20'}`}>
+                                                    {ad.status}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))
+                                ) : (
+                                    <tr>
+                                        <td colSpan={4} className="p-8 text-center text-gray-500 italic">No previous promotions found.</td>
+                                    </tr>
+                                )}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </section>
         </div>

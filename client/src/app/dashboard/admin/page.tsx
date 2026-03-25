@@ -51,20 +51,20 @@ export default function AdminDashboard() {
     if (loading) return <div className="p-20 text-center text-zinc-500">Loading Admin Dashboard...</div>;
 
     return (
-        <div className="p-8 max-w-7xl mx-auto min-h-screen bg-black text-white">
-            <header className="mb-10 flex justify-between items-end">
+        <div className="p-4 sm:p-8 max-w-7xl mx-auto min-h-screen bg-black text-white">
+            <header className="mb-6 sm:mb-10 flex flex-col sm:flex-row justify-between items-start sm:items-end gap-4">
                 <div>
-                    <h1 className="text-4xl font-black bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent uppercase tracking-tighter">
+                    <h1 className="text-2xl sm:text-4xl font-black bg-gradient-to-r from-purple-400 to-pink-600 bg-clip-text text-transparent uppercase tracking-tighter">
                         Admin Central
                     </h1>
-                    <p className="text-zinc-500 mt-2 font-medium">Platform overview and management.</p>
+                    <p className="text-zinc-500 mt-2 font-medium text-sm sm:text-base">Platform overview and management.</p>
                 </div>
-                <div className="flex bg-zinc-900/50 p-1 rounded-xl border border-zinc-800">
+                <div className="flex bg-zinc-900/50 p-1 rounded-xl border border-zinc-800 w-full sm:w-auto">
                     {['overview', 'users', 'revenue'].map((tab) => (
                         <button
                             key={tab}
                             onClick={() => setActiveTab(tab as any)}
-                            className={`px-6 py-2 rounded-lg text-xs font-bold uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-purple-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
+                            className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-purple-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
                                 }`}
                         >
                             {tab}
@@ -101,59 +101,61 @@ export default function AdminDashboard() {
             )}
 
             {activeTab === 'users' && (
-                <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl overflow-hidden animate-in slide-in-from-bottom-4 duration-500">
-                    <table className="w-full text-left border-collapse">
-                        <thead>
-                            <tr className="bg-zinc-800/50">
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">User</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Role</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Status</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Joined</th>
-                                <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody className="divide-y divide-zinc-800">
-                            {users.map((u) => (
-                                <tr key={u._id} className="hover:bg-zinc-800/30 transition-colors">
-                                    <td className="p-4">
-                                        <div className="flex items-center gap-3">
-                                            <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-xs">
-                                                {u.name[0]}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-sm">{u.name}</p>
-                                                <p className="text-xs text-zinc-500">{u.email}</p>
-                                            </div>
-                                        </div>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${u.role === 'vixen' ? 'bg-pink-500/10 text-pink-500' : 'bg-purple-500/10 text-purple-500'
-                                            }`}>
-                                            {u.role}
-                                        </span>
-                                    </td>
-                                    <td className="p-4">
-                                        <span className={`text-[10px] font-bold uppercase ${u.isVerified ? 'text-green-400' : 'text-zinc-600'}`}>
-                                            {u.isVerified ? 'Verified' : 'Unverified'}
-                                        </span>
-                                    </td>
-                                    <td className="p-4 text-xs text-zinc-500">
-                                        {new Date(u.createdAt).toLocaleDateString()}
-                                    </td>
-                                    <td className="p-4">
-                                        <Button
-                                            size="sm"
-                                            variant="outline"
-                                            className="text-[10px] font-bold uppercase tracking-tighter"
-                                            onClick={() => toggleUserVerification(u._id, u.isVerified)}
-                                        >
-                                            {u.isVerified ? 'Unverify' : 'Verify'}
-                                        </Button>
-                                    </td>
+                <div className="bg-zinc-900/50 border border-zinc-800 rounded-3xl animate-in slide-in-from-bottom-4 duration-500">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full w-full text-left border-collapse">
+                            <thead>
+                                <tr className="bg-zinc-800/50">
+                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">User</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Role</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Status</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Joined</th>
+                                    <th className="p-4 text-xs font-bold uppercase tracking-widest text-zinc-500">Action</th>
                                 </tr>
-                            ))}
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody className="divide-y divide-zinc-800">
+                                {users.map((u) => (
+                                    <tr key={u._id} className="hover:bg-zinc-800/30 transition-colors">
+                                        <td className="p-4">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center font-bold text-xs">
+                                                    {u.name[0]}
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-sm">{u.name}</p>
+                                                    <p className="text-xs text-zinc-500">{u.email}</p>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-full ${u.role === 'vixen' ? 'bg-pink-500/10 text-pink-500' : 'bg-purple-500/10 text-purple-500'
+                                                }`}>
+                                                {u.role}
+                                            </span>
+                                        </td>
+                                        <td className="p-4">
+                                            <span className={`text-[10px] font-bold uppercase ${u.isVerified ? 'text-green-400' : 'text-zinc-600'}`}>
+                                                {u.isVerified ? 'Verified' : 'Unverified'}
+                                            </span>
+                                        </td>
+                                        <td className="p-4 text-xs text-zinc-500">
+                                            {new Date(u.createdAt).toLocaleDateString()}
+                                        </td>
+                                        <td className="p-4">
+                                            <Button
+                                                size="sm"
+                                                variant="outline"
+                                                className="text-[10px] font-bold uppercase tracking-tighter"
+                                                onClick={() => toggleUserVerification(u._id, u.isVerified)}
+                                            >
+                                                {u.isVerified ? 'Unverify' : 'Verify'}
+                                            </Button>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             )}
 

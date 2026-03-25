@@ -85,7 +85,7 @@ export default function MessagesDashboard() {
     if (loading) return <div className="p-20 text-center text-gray-500">Loading your messages...</div>;
 
     return (
-        <div className="p-4 sm:p-6 max-w-7xl mx-auto h-[calc(100vh-120px)] flex flex-col md:flex-row gap-4 md:gap-8">
+        <div className="p-4 sm:p-6 max-w-7xl mx-auto h-[calc(100dvh-120px)] flex flex-col md:flex-row gap-4 md:gap-8">
             <div className={`${activeConversation ? 'hidden md:block' : 'block'} w-full md:w-1/3 h-full`}>
                 <ConversationList
                     conversations={conversations}

@@ -61,10 +61,10 @@ export default function VixenBookingsPage() {
     };
 
     return (
-        <div className="p-6 max-w-5xl mx-auto min-h-screen bg-black text-white">
-            <header className="mb-8">
-                <h1 className="text-3xl font-bold">Project Requests</h1>
-                <p className="text-gray-400 mt-1">Manage incoming booking requests from music artists.</p>
+        <div className="p-4 sm:p-6 max-w-5xl mx-auto min-h-screen bg-black text-white">
+            <header className="mb-6 sm:mb-8">
+                <h1 className="text-2xl sm:text-3xl font-bold">Project Requests</h1>
+                <p className="text-gray-400 mt-1 text-sm sm:text-base">Manage incoming booking requests from music artists.</p>
             </header>
 
             {loading ? (
