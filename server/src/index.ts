@@ -43,6 +43,13 @@ if (missingEnvVars.length > 0) {
     process.exit(1);
 }
 
+// Set API_URL for file serving
+if (!process.env.API_URL) {
+    const port = process.env.PORT || 8000;
+    const protocol = process.env.NODE_ENV === 'production' ? 'https' : 'http';
+    process.env.API_URL = `${protocol}://localhost:${port}`;
+}
+
 // Log startup in production without exposing details
 const isProduction = process.env.NODE_ENV === 'production';
 console.log(`🚀 Raven Server starting in ${isProduction ? 'PRODUCTION' : 'DEVELOPMENT'} mode`);

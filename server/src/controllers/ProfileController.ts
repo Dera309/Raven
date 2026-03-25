@@ -127,9 +127,10 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
         // Construct the file URL based on storage type
         let fileUrl = fileData.path;
         
-        // For local storage, construct a relative URL
+        // For local storage, construct a full URL
         if (!fileUrl.startsWith('http')) {
-            fileUrl = `/uploads/${fileData.filename}`;
+            const apiUrl = process.env.API_URL || `http://localhost:${process.env.PORT || 8000}`;
+            fileUrl = `${apiUrl}/uploads/${fileData.filename}`;
         }
 
         const newItem = {
