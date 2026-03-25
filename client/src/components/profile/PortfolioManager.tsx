@@ -42,15 +42,24 @@ export default function PortfolioManager({ items, onUploadSuccess }: PortfolioMa
         formData.append('description', description);
 
         try {
-            const response = await api.post('/profiles/upload', formData, true); // Send as FormData
+            const response = await api.post('/profiles/upload', formData, true);
             onUploadSuccess(response.portfolio);
             setDescription('');
-            // Reset input
             e.target.value = '';
         } catch (err: any) {
             setError(err.message || 'Failed to upload media');
         } finally {
             setUploading(false);
+        }
+    };
+
+    const handleDeleteMedia = (e: React.MouseEvent<HTMLButtonElement>, publicId: string) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (confirm('Are you sure you want to delete this media?')) {
+            const updatedPortfolio = items.filter(item => item.publicId !== publicId);
+            onUploadSuccess(updatedPortfolio);
         }
     };
 
@@ -105,7 +114,7 @@ export default function PortfolioManager({ items, onUploadSuccess }: PortfolioMa
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                {items.map((item, index) => (
+                {items.map((item) => (
                     <div key={item.publicId} className="relative group aspect-square rounded-xl overflow-hidden bg-gray-800 border border-gray-700 shadow-lg">
                         {item.type === 'video' ? (
                             <video
@@ -130,7 +139,12 @@ export default function PortfolioManager({ items, onUploadSuccess }: PortfolioMa
                                 <span className={`text-[10px] px-2 py-0.5 rounded-full ${item.type === 'video' ? 'bg-blue-500' : 'bg-purple-500'} text-white uppercase`}>
                                     {item.type}
                                 </span>
-                                <button className="text-red-400 hover:text-red-300 transition-colors">
+                                <button
+                                    type="button"
+                                    onClick={(e) => handleDeleteMedia(e, item.publicId)}
+                                    className="text-red-400 hover:text-red-300 transition-colors focus:outline-none"
+                                    aria-label="Delete media"
+                                >
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                     </svg>
