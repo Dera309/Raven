@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/utils/api';
+import { useAuth } from '@/context/AuthContext';
 import Button from '@/components/ui/Button';
 
 interface Stats {
@@ -11,11 +13,19 @@ interface Stats {
 }
 
 export default function AdminDashboard() {
+    const { user, logout } = useAuth();
+    const router = useRouter();
     const [stats, setStats] = useState<Stats | null>(null);
     const [users, setUsers] = useState<any[]>([]);
     const [ads, setAds] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'overview' | 'users' | 'revenue'>('overview');
+
+    useEffect(() => {
+        if (user?.role !== 'admin') {
+            router.push('/login');
+        }
+    }, [user, router]);
 
     const fetchData = async () => {
         setLoading(true);
@@ -48,6 +58,10 @@ export default function AdminDashboard() {
         }
     };
 
+    const handleLogout = () => {
+        logout();
+    };
+
     if (loading) return <div className="p-20 text-center text-zinc-500">Loading Admin Dashboard...</div>;
 
     return (
@@ -59,17 +73,34 @@ export default function AdminDashboard() {
                     </h1>
                     <p className="text-zinc-500 mt-2 font-medium text-sm sm:text-base">Platform overview and management.</p>
                 </div>
-                <div className="flex bg-zinc-900/50 p-1 rounded-xl border border-zinc-800 w-full sm:w-auto">
-                    {['overview', 'users', 'revenue'].map((tab) => (
+                <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+                    <div className="flex bg-zinc-900/50 p-1 rounded-xl border border-zinc-800 w-full sm:w-auto">
+                        {['overview', 'users', 'revenue'].map((tab) => (
+                            <button
+                                key={tab}
+                                onClick={() => setActiveTab(tab as any)}
+                                className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-purple-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
+                                    }`}
+                            >
+                                {tab}
+                            </button>
+                        ))}
+                    </div>
+                    <div className="flex items-center gap-3 bg-zinc-900/50 px-4 py-2 rounded-xl border border-zinc-800">
+                        <div className="text-right">
+                            <p className="text-xs font-bold text-zinc-300">{user?.name}</p>
+                            <p className="text-[10px] text-zinc-500">{user?.email}</p>
+                        </div>
                         <button
-                            key={tab}
-                            onClick={() => setActiveTab(tab as any)}
-                            className={`flex-1 sm:flex-none px-3 sm:px-6 py-2 rounded-lg text-[10px] sm:text-xs font-bold uppercase tracking-widest transition-all ${activeTab === tab ? 'bg-purple-600 text-white shadow-lg' : 'text-zinc-500 hover:text-zinc-300'
-                                }`}
+                            onClick={handleLogout}
+                            className="ml-2 px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-xs font-bold rounded-lg transition-all border border-red-600/50"
+                            title="Logout"
                         >
-                            {tab}
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                            </svg>
                         </button>
-                    ))}
+                    </div>
                 </div>
             </header>
 
