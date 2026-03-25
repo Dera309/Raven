@@ -1,77 +1,120 @@
 # Cloudinary Setup Guide
 
-## Overview
-Raven uses Cloudinary for image and video uploads. If Cloudinary is not configured, the app will fall back to local file storage for development.
+This guide will help you set up Cloudinary for image and video uploads in the Raven application.
 
-## Setup Instructions
+## Why Cloudinary?
+
+Cloudinary provides:
+- Cloud-based image and video storage
+- Automatic optimization and transformation
+- CDN delivery for fast loading
+- Free tier with 25GB storage and 25M transformations/month
+
+## Step-by-Step Setup
 
 ### 1. Create a Cloudinary Account
-- Go to https://cloudinary.com
-- Sign up for a free account
-- Verify your email
+
+1. Visit https://cloudinary.com/users/register/free
+2. Sign up with your email or GitHub account
+3. Verify your email
+4. Log in to your Cloudinary dashboard
 
 ### 2. Get Your Credentials
-- Log in to your Cloudinary dashboard
-- Go to **Settings** (gear icon)
-- Click on the **API Keys** tab
-- You'll see:
-  - **Cloud Name** (required)
-  - **API Key** (required)
-  - **API Secret** (required)
 
-### 3. Configure Environment Variables
+1. Go to https://console.cloudinary.com/console
+2. You'll see your **Cloud Name** at the top of the dashboard
+3. Scroll down to find your **API Key** and **API Secret**
+4. Keep these credentials safe - never commit them to version control
 
-#### For Development (Local)
-Edit `server/.env`:
+### 3. Update Your .env File
+
+Open `server/.env` and replace the placeholder values:
+
 ```env
-CLOUDINARY_CLOUD_NAME=your_cloud_name
-CLOUDINARY_API_KEY=your_api_key
-CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_CLOUD_NAME=<your_actual_cloud_name>
+CLOUDINARY_API_KEY=<your_actual_api_key>
+CLOUDINARY_API_SECRET=<your_actual_api_secret>
 ```
 
-#### For Production (Render)
-1. Go to your Render backend service
-2. Click on **Environment**
-3. Add the following variables:
-   - `CLOUDINARY_CLOUD_NAME` = your cloud name
-   - `CLOUDINARY_API_KEY` = your API key
-   - `CLOUDINARY_API_SECRET` = your API secret
-4. Click **Save Changes**
-5. Redeploy the service
+**Example:**
+```env
+CLOUDINARY_CLOUD_NAME=dxyz1234
+CLOUDINARY_API_KEY=123456789012345
+CLOUDINARY_API_SECRET=abcdefghijklmnopqrstuvwxyz
+```
 
-### 4. Test the Configuration
-- Try uploading a photo in the app
-- If successful, the image will be stored on Cloudinary
-- If Cloudinary is not configured, files will be stored locally in `server/uploads/`
+### 4. Restart Your Server
 
-## Fallback Behavior
+After updating the .env file, restart your Node.js server:
 
-If Cloudinary credentials are not configured:
-- ✅ App will still work
-- ✅ Files will be stored locally in `server/uploads/`
-- ⚠️ Files won't persist after server restart
-- ⚠️ Not suitable for production
+```bash
+# Stop the current server (Ctrl+C)
+# Then restart it
+npm run dev
+```
+
+You should see:
+```
+✅ Cloudinary configured - using cloud storage
+```
+
+## Verification
+
+To verify Cloudinary is working:
+
+1. Log in to your app
+2. Go to your profile
+3. Try uploading an image or video
+4. Check your Cloudinary dashboard at https://console.cloudinary.com/console/media_library
+5. Your uploaded files should appear there
 
 ## Troubleshooting
 
-### "Failed to upload media" Error
-1. Check that all three Cloudinary credentials are set
-2. Verify credentials are correct (copy-paste from dashboard)
-3. Check that `CLOUDINARY_CLOUD_NAME` is not set to `your_cloud_name`
-4. Restart the server after updating credentials
+### Still seeing "Cloudinary not configured" warning?
 
-### Files Not Appearing
-- Check Cloudinary dashboard > Media Library
-- Verify the upload folder structure (raven/images, raven/videos)
-- Check server logs for upload errors
+1. **Check your credentials** - Make sure you copied them correctly from the dashboard
+2. **No spaces** - Ensure there are no extra spaces in your .env values
+3. **Restart server** - Always restart after changing .env
+4. **Check NODE_ENV** - Make sure `NODE_ENV=development` in your .env
 
-### Local Storage Issues
-- Check that `server/uploads/` directory exists
-- Verify file permissions on the uploads directory
-- Clear old uploads if disk space is low
+### Uploads not appearing in Cloudinary?
 
-## Security Notes
-- Never commit `.env` files with real credentials
-- Use environment variables for all sensitive data
-- Rotate API keys periodically
-- Use restricted API keys in production if possible
+1. Verify the upload succeeded (check browser console for errors)
+2. Check your Cloudinary API quota hasn't been exceeded
+3. Ensure your API credentials are correct
+
+### "Invalid API Key" error?
+
+1. Double-check your API Key and Secret from the dashboard
+2. Make sure you're using the correct credentials (not from a different project)
+3. Regenerate your API Key if needed from the dashboard settings
+
+## Production Deployment
+
+For production (e.g., Render):
+
+1. Add your Cloudinary credentials to your hosting platform's environment variables
+2. Set `NODE_ENV=production`
+3. Ensure `FRONTEND_URL` matches your production domain
+
+## Free Tier Limits
+
+- 25GB storage
+- 25M transformations/month
+- Unlimited bandwidth
+- Sufficient for most development and small production use
+
+For more details, visit: https://cloudinary.com/pricing
+
+## Security Best Practices
+
+1. **Never commit credentials** - Always use .env files
+2. **Use API Secret carefully** - Only use it server-side
+3. **Regenerate keys** - If you suspect compromise, regenerate from dashboard
+4. **Monitor usage** - Check your Cloudinary dashboard regularly for unusual activity
+
+## Support
+
+- Cloudinary Docs: https://cloudinary.com/documentation
+- API Reference: https://cloudinary.com/documentation/cloudinary_api
+- Community: https://support.cloudinary.com/
