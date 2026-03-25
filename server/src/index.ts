@@ -121,9 +121,12 @@ app.use(cors({
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept']
 }));
 
-// Body parser with size limits
-app.use(express.json({ limit: '10kb' }));
-app.use(express.urlencoded({ extended: true, limit: '10kb' }));
+// Body parser with size limits - increased for file uploads
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
+
+// Serve uploaded files (for local storage)
+app.use('/uploads', express.static('uploads'));
 
 // Data sanitization against NoSQL injection
 app.use(mongoSanitize());

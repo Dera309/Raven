@@ -112,6 +112,7 @@ export const getPublicProfile = async (req: AuthRequest, res: Response) => {
 export const uploadMedia = async (req: AuthRequest, res: Response) => {
     try {
         if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+        
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
@@ -122,10 +123,19 @@ export const uploadMedia = async (req: AuthRequest, res: Response) => {
         }
 
         const fileData = req.file as any;
+        
+        // Construct the file URL based on storage type
+        let fileUrl = fileData.path;
+        
+        // For local storage, construct a relative URL
+        if (!fileUrl.startsWith('http')) {
+            fileUrl = `/uploads/${fileData.filename}`;
+        }
+
         const newItem = {
-            url: fileData.path,
+            url: fileUrl,
             type: fileData.mimetype.startsWith('video') ? 'video' : 'image',
-            publicId: fileData.filename,
+            publicId: fileData.filename || fileData.public_id,
             description: req.body.description || '',
         };
 

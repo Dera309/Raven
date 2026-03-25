@@ -11,7 +11,7 @@ import {
     getArtistProfile,
 } from '../controllers/ProfileController';
 import { authMiddleware } from '../middleware/authMiddleware';
-import upload from '../middleware/uploadMiddleware';
+import upload, { handleUploadError } from '../middleware/uploadMiddleware';
 import { artistProfileValidation, vixenProfileValidation, userIdValidation } from '../middleware/validators';
 
 const router = express.Router();
@@ -19,7 +19,7 @@ const router = express.Router();
 // @route   POST /api/profiles/upload
 // @desc    Upload media to portfolio
 // @access  Private
-router.post('/upload', authMiddleware, upload.single('media'), uploadMedia);
+router.post('/upload', authMiddleware, upload.single('media'), handleUploadError, uploadMedia);
 
 // @route   GET /api/profiles/me
 // @desc    Get current user's profile
