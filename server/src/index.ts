@@ -68,10 +68,20 @@ const app: Express = express();
 const server = http.createServer(app);
 const port = process.env.PORT || 8000;
 
-// Connect to Database first
-connectDB();
+let dbConnected = false;
 
-// Initialize Socket.io after DB connection
+const startServer = async () => {
+    try {
+        await connectDB();
+        dbConnected = true;
+        console.log('✅ Database connection established');
+    } catch (err) {
+        console.error('❌ Failed to connect to database:', (err as Error).message);
+    }
+};
+
+startServer();
+
 const socketInstance = initSocket(server);
 setSocketIO(socketInstance);
 

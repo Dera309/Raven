@@ -8,7 +8,6 @@ const connectDB = async () => {
     const localUri = 'mongodb://localhost:27017/raven_db';
     
     try {
-        mongoose.set('bufferCommands', false);
         const uriToUse = atlasUri || localUri;
         const maskedUri = uriToUse.replace(/:([^@]+)@/, ':****@');
 
