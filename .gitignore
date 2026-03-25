@@ -47,3 +47,6 @@ coverage/
 
 # Local file uploads (development only)
 server/uploads/
+
+# Seed script (contains sensitive credentials)
+server/src/seed.ts
