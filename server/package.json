@@ -9,7 +9,8 @@
     "dev": "nodemon src/index.ts",
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "ts-node src/seed.ts"
+    "seed": "ts-node src/seed.ts",
+    "update-admin": "ts-node src/update-admin.ts"
   },
   "keywords": [],
   "author": "",
