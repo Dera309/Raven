@@ -92,8 +92,9 @@ export default function AdminDashboard() {
                             <p className="text-[10px] text-zinc-500">{user?.email}</p>
                         </div>
                         <button
+                            type="button"
                             onClick={handleLogout}
-                            className="ml-2 px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-xs font-bold rounded-lg transition-all border border-red-600/50"
+                            className="ml-2 px-3 py-1 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-xs font-bold rounded-lg transition-all border border-red-600/50 cursor-pointer active:scale-95"
                             title="Logout"
                         >
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
