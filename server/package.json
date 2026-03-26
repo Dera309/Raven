@@ -10,7 +10,9 @@
     "build": "tsc",
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "ts-node src/seed.ts",
-    "update-admin": "ts-node src/update-admin.ts"
+    "update-admin": "ts-node src/update-admin.ts",
+    "reset-admin": "ts-node src/reset-admin.ts",
+    "clean-admin": "ts-node src/clean-admin.ts"
   },
   "keywords": [],
   "author": "",
