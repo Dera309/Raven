@@ -11,6 +11,8 @@ function BookingForm() {
     const router = useRouter();
     const vixenId = searchParams.get('vixenId');
 
+    console.log('BookingForm rendered with vixenId:', vixenId);
+
     const [vixen, setVixen] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
@@ -26,11 +28,18 @@ function BookingForm() {
     });
 
     useEffect(() => {
-        if (!vixenId) return;
+        console.log('useEffect called with vixenId:', vixenId);
+        if (!vixenId) {
+            setError('No vixen ID provided');
+            setLoading(false);
+            return;
+        }
 
         const fetchVixen = async () => {
             try {
+                console.log('Fetching vixen with ID:', vixenId);
                 const data = await api.get(`/profiles/vixen/${vixenId}`);
+                console.log('Vixen data received:', data);
                 setVixen(data.user);
                 // Pre-fill rate if available from profile
                 if (data.profile?.rate) {
@@ -75,7 +84,18 @@ function BookingForm() {
     };
 
     if (loading) return <div className="p-20 text-center text-gray-500">Loading vixen details...</div>;
-    if (!vixen && !loading) return <div className="p-20 text-center text-red-500">Vixen not found.</div>;
+    if (!vixen && !loading) return (
+        <div className="p-20 text-center">
+            <div className="text-red-500 mb-4">Vixen not found.</div>
+            {error && <div className="text-gray-400 text-sm">{error}</div>}
+            <button 
+                onClick={() => router.back()}
+                className="mt-4 text-purple-500 hover:text-purple-400"
+            >
+                Go Back
+            </button>
+        </div>
+    );
 
     return (
         <div className="p-4 sm:p-6 max-w-2xl mx-auto min-h-screen">
@@ -186,7 +206,7 @@ function BookingForm() {
 
 export default function NewBookingPage() {
     return (
-        <Suspense fallback={<div className="p-20 text-center">Loading search parameters...</div>}>
+        <Suspense fallback={<div className="p-20 text-center text-gray-500">Loading search parameters...</div>}>
             <BookingForm />
         </Suspense>
     );

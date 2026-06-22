@@ -4,6 +4,7 @@ import {
     updateBookingStatus,
     getMyBookings,
     getBookingById,
+    initiateBookingPayment,
 } from '../controllers/BookingController';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { bookingValidation, bookingIdValidation } from '../middleware/validators';
@@ -29,5 +30,10 @@ router.get('/:bookingId', authMiddleware, bookingIdValidation, getBookingById);
 // @desc    Update booking status (Accept/Decline/Cancel)
 // @access  Private
 router.patch('/:bookingId/status', authMiddleware, bookingIdValidation, updateBookingStatus);
+
+// @route   POST /api/bookings/payment
+// @desc    Initiate booking payment via Paystack
+// @access  Private (Artist only)
+router.post('/payment', authMiddleware, initiateBookingPayment);
 
 export default router;

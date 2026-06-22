@@ -195,7 +195,20 @@ export default function ArtistBookingDetailPage() {
                         </div>
 
                         {booking.status === 'accepted' && (
-                            <Button variant="gradient" className="w-full mt-6">
+                            <Button 
+                                variant="gradient" 
+                                className="w-full mt-6"
+                                onClick={async () => {
+                                    try {
+                                        const response = await api.post('/bookings/payment', { bookingId });
+                                        if (response.authorization_url) {
+                                            window.location.href = response.authorization_url;
+                                        }
+                                    } catch (err: any) {
+                                        alert(err.message || 'Failed to initialize payment');
+                                    }
+                                }}
+                            >
                                 Pay Now
                             </Button>
                         )}

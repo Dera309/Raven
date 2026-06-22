@@ -4,6 +4,9 @@ import mongoose from 'mongoose';
 import Booking, { BookingStatus } from '../models/Booking';
 import User, { UserRole } from '../models/User';
 import { createNotification } from './NotificationController';
+import axios from 'axios';
+
+const PAYSTACK_SECRET_KEY = process.env.PAYSTACK_SECRET_KEY;
 
 export const createBooking = async (req: AuthRequest, res: Response) => {
     try {
@@ -162,5 +165,69 @@ export const getBookingById = async (req: AuthRequest, res: Response) => {
     } catch (error: any) {
         console.error('Get booking error:', error);
         res.status(500).json({ message: error.message || 'Failed to fetch booking' });
+    }
+};
+
+export const initiateBookingPayment = async (req: AuthRequest, res: Response) => {
+    try {
+        if (!req.user) return res.status(401).json({ message: 'Not authorized' });
+
+        if (!PAYSTACK_SECRET_KEY) {
+            return res.status(500).json({ message: 'Payment service not configured' });
+        }
+
+        const { bookingId } = req.body;
+
+        const booking = await Booking.findById(bookingId).populate('artist');
+        if (!booking) return res.status(404).json({ message: 'Booking not found' });
+
+        // Verify the user is the artist who made the booking
+        if ((booking.artist as any)._id.toString() !== req.user.id) {
+            return res.status(403).json({ message: 'Not authorized to pay for this booking' });
+        }
+
+        if (booking.status !== BookingStatus.ACCEPTED) {
+            return res.status(400).json({ message: 'Booking must be accepted before payment' });
+        }
+
+        if (booking.paymentStatus === 'paid') {
+            return res.status(400).json({ message: 'Booking already paid' });
+        }
+
+        const amount = booking.rateOffered;
+        const artistUser = await User.findById((booking.artist as any)._id);
+
+        // Initialize Paystack Transaction
+        const response = await axios.post('https://api.paystack.co/transaction/initialize', {
+            email: artistUser?.email,
+            amount: amount * 100, // Paystack uses Kobo
+            metadata: {
+                bookingId: booking._id,
+                userId: req.user.id
+            },
+            callback_url: `${process.env.FRONTEND_URL}/dashboard/artist/bookings/${bookingId}`
+        }, {
+            headers: {
+                Authorization: `Bearer ${PAYSTACK_SECRET_KEY}`,
+                'Content-Type': 'application/json'
+            }
+        });
+
+        const responseData = response.data as any;
+        if (!responseData?.data?.authorization_url) {
+            throw new Error('Invalid response from Paystack');
+        }
+
+        res.status(200).json({
+            message: 'Payment initialized',
+            authorization_url: responseData.data.authorization_url,
+            reference: responseData.data.reference
+        });
+    } catch (error: any) {
+        console.error('Booking Payment Init Error:', error.response?.data || error.message);
+        if (error.response?.status === 401) {
+            return res.status(500).json({ message: 'Invalid Paystack credentials' });
+        }
+        res.status(500).json({ message: 'Failed to initialize payment' });
     }
 };
